@@ -9,6 +9,7 @@
       name: 'Luna',
       type: 'Cat',
       age: '2 years',
+      ageNumber: 2,
       breed: 'Persian',
       location: 'Taipei Animal Shelter',
       image: '/placeholder.svg?height=80&width=80',
@@ -19,6 +20,7 @@
       name: 'Max',
       type: 'Dog',
       age: '3 years',
+      ageNumber: 3,
       breed: 'Golden Retriever',
       location: 'New Taipei Rescue',
       image: '/placeholder.svg?height=80&width=80',
@@ -29,6 +31,7 @@
       name: 'Mimi',
       type: 'Cat',
       age: '1 year',
+      ageNumber: 1,
       breed: 'British Shorthair',
       location: 'Taichung Pet Center',
       image: '/placeholder.svg?height=80&width=80',
@@ -39,6 +42,7 @@
       name: 'Buddy',
       type: 'Dog',
       age: '4 years',
+      ageNumber: 4,
       breed: 'Labrador',
       location: 'Kaohsiung Shelter',
       image: '/placeholder.svg?height=80&width=80',
@@ -46,7 +50,24 @@
     }
   ];
 
-  let searchQuery = '';
+  let searchQuery = $state('');
+  let selectedType = $state('all');
+  let selectedAge = $state('all');
+
+  let filteredPets = $derived(pets.filter(pet => {
+    const matchesSearch = pet.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         pet.breed.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         pet.location.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    const matchesType = selectedType === 'all' || pet.type.toLowerCase() === selectedType;
+    
+    const matchesAge = selectedAge === 'all' || 
+                      (selectedAge === 'young' && pet.ageNumber <= 2) ||
+                      (selectedAge === 'adult' && pet.ageNumber > 2 && pet.ageNumber <= 5) ||
+                      (selectedAge === 'senior' && pet.ageNumber > 5);
+    
+    return matchesSearch && matchesType && matchesAge;
+  }));
 </script>
 
 <div class="max-w-md mx-auto bg-white min-h-screen">
@@ -93,22 +114,88 @@
 
   <!-- Pet Categories -->
   <div class="px-4 py-4 bg-white border-b border-gray-100">
-    <div class="flex gap-4">
-      <button class="px-4 py-2 bg-blue-100 text-blue-600 rounded-full text-sm font-medium">
+    <div class="flex gap-4 mb-4">
+      <button 
+        class="px-4 py-2 rounded-full text-sm font-medium transition-colors"
+        class:bg-blue-100={selectedType === 'all'}
+        class:text-blue-600={selectedType === 'all'}
+        class:bg-gray-100={selectedType !== 'all'}
+        class:text-gray-600={selectedType !== 'all'}
+        onclick={() => selectedType = 'all'}
+      >
         All Pets
       </button>
-      <button class="px-4 py-2 bg-gray-100 text-gray-600 rounded-full text-sm font-medium">
+      <button 
+        class="px-4 py-2 rounded-full text-sm font-medium transition-colors"
+        class:bg-blue-100={selectedType === 'dog'}
+        class:text-blue-600={selectedType === 'dog'}
+        class:bg-gray-100={selectedType !== 'dog'}
+        class:text-gray-600={selectedType !== 'dog'}
+        onclick={() => selectedType = 'dog'}
+      >
         Dogs
       </button>
-      <button class="px-4 py-2 bg-gray-100 text-gray-600 rounded-full text-sm font-medium">
+      <button 
+        class="px-4 py-2 rounded-full text-sm font-medium transition-colors"
+        class:bg-blue-100={selectedType === 'cat'}
+        class:text-blue-600={selectedType === 'cat'}
+        class:bg-gray-100={selectedType !== 'cat'}
+        class:text-gray-600={selectedType !== 'cat'}
+        onclick={() => selectedType = 'cat'}
+      >
         Cats
+      </button>
+    </div>
+    
+    <!-- Age Filter -->
+    <div class="flex gap-2">
+      <span class="text-sm font-medium text-gray-700 self-center mr-2">Age:</span>
+      <button 
+        class="px-3 py-1 rounded-full text-xs font-medium transition-colors"
+        class:bg-green-100={selectedAge === 'all'}
+        class:text-green-600={selectedAge === 'all'}
+        class:bg-gray-100={selectedAge !== 'all'}
+        class:text-gray-600={selectedAge !== 'all'}
+        onclick={() => selectedAge = 'all'}
+      >
+        All
+      </button>
+      <button 
+        class="px-3 py-1 rounded-full text-xs font-medium transition-colors"
+        class:bg-green-100={selectedAge === 'young'}
+        class:text-green-600={selectedAge === 'young'}
+        class:bg-gray-100={selectedAge !== 'young'}
+        class:text-gray-600={selectedAge !== 'young'}
+        onclick={() => selectedAge = 'young'}
+      >
+        Young (0-2)
+      </button>
+      <button 
+        class="px-3 py-1 rounded-full text-xs font-medium transition-colors"
+        class:bg-green-100={selectedAge === 'adult'}
+        class:text-green-600={selectedAge === 'adult'}
+        class:bg-gray-100={selectedAge !== 'adult'}
+        class:text-gray-600={selectedAge !== 'adult'}
+        onclick={() => selectedAge = 'adult'}
+      >
+        Adult (3-5)
+      </button>
+      <button 
+        class="px-3 py-1 rounded-full text-xs font-medium transition-colors"
+        class:bg-green-100={selectedAge === 'senior'}
+        class:text-green-600={selectedAge === 'senior'}
+        class:bg-gray-100={selectedAge !== 'senior'}
+        class:text-gray-600={selectedAge !== 'senior'}
+        onclick={() => selectedAge = 'senior'}
+      >
+        Senior (6+)
       </button>
     </div>
   </div>
 
   <!-- Pet Listings -->
   <div class="px-4 py-2">
-    {#each pets as pet}
+    {#each filteredPets as pet}
       <div 
         role="button" 
         tabindex="0" 
